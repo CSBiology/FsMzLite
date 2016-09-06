@@ -1,0 +1,25 @@
+type project
+title
+    FsMzLite
+owners
+    David Zimmer; Timo Mühlhaus
+authors 
+    David Zimmer; Timo Mühlhaus
+projectUrl
+    https://github.com/CSBiology/FsMzLite.git/CSBiology/FsMzLite
+iconUrl
+    https://raw.githubusercontent.com/CSBiology/FsMzLite/master/docs/files/img/logo.png
+licenseUrl
+    https://github.com/CSBiology/FsMzLite.git/CSBiology/FsMzLite/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    MzLite FSharp bioinformatics MS mass spectrometry proteomics
+summary
+    FsMzLite is a scripting friendly Wrapper for the MzLite library.
+description
+    FsMzLite is a scripting friendly Wrapper for the MzLite library.
+
+
