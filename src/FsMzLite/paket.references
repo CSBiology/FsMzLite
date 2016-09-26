@@ -1,1 +1,6 @@
 FSharp.Core
+MzLite
+MzLite.SQL
+MzLite.Wiff
+MzLite.Processing
+MzLite.Thermo

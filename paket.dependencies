@@ -1,6 +1,11 @@
 source https://nuget.org/api/v2
 
 nuget FSharp.Core redirects: force
+nuget MzLite
+nuget MzLite.Processing
+nuget MzLite.SQL
+nuget MzLite.Thermo
+nuget MzLite.Wiff
 
 group Build
   source https://nuget.org/api/v2
