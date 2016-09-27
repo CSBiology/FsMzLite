@@ -36,16 +36,22 @@ module AccessDB =
         | false -> initDB filePath
 
     /// Inserts MassSpectrum into DB schema
-    let insertMSSpectrum (db: MzLiteSQL) runID (reader:IMzLiteDataReader) (spectrum: MassSpectrum) = 
+    let insertMSSpectrum (db: MzLiteSQL) runID (reader:IMzLiteDataReader) (compress: bool) (spectrum: MassSpectrum) = 
         let peakArray = reader.ReadSpectrumPeaks(spectrum.ID)
-        db.Insert(runID, spectrum, peakArray)
-          
+        match compress with 
+        | true  -> 
+            let clonedP = new Peak1DArray(BinaryDataCompressionType.ZLib,BinaryDataType.Float64,BinaryDataType.Float64)
+            clonedP.Peaks <- peakArray.Peaks
+            db.Insert(runID, spectrum, clonedP)
+        | false ->  
+            db.Insert(runID, spectrum, peakArray)
+
     /// Starts bulkinsert of mass spectra into a MzLiteSQL database
-    let insertMSSpectraBy filepath runID (reader:IMzLiteDataReader) (spectra: seq<MassSpectrum>) = 
+    let insertMSSpectraBy filepath runID (reader:IMzLiteDataReader) (compress: bool) (spectra: seq<MassSpectrum>) = 
         let db = getConnection filepath
         let bulkInsert spectra = 
             spectra
-            |> Seq.iter (insertMSSpectrum db runID reader)                                 
+            |> Seq.iter (insertMSSpectrum db runID reader compress)                                 
         let trans = db.BeginTransaction()
         bulkInsert spectra
         trans.Commit()
