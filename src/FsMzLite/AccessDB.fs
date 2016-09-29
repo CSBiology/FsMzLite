@@ -40,7 +40,7 @@ module AccessDB =
         let peakArray = reader.ReadSpectrumPeaks(spectrum.ID)
         match compress with 
         | true  -> 
-            let clonedP = new Peak1DArray(BinaryDataCompressionType.ZLib,BinaryDataType.Float64,BinaryDataType.Float64)
+            let clonedP = new Peak1DArray(BinaryDataCompressionType.ZLib,peakArray.MzDataType,peakArray.IntensityDataType)
             clonedP.Peaks <- peakArray.Peaks
             db.Insert(runID, spectrum, clonedP)
         | false ->  
