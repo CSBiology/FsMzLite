@@ -1,6 +1,3 @@
 FSharp.Core
-MzLite
-MzLite.SQL
-MzLite.Wiff
-MzLite.Processing
-MzLite.Thermo
+Newtonsoft.Json
+System.Data.SQLite.Core 

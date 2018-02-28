@@ -18,9 +18,6 @@ module AccessPeakArray =
     open MzLite.SQL
     open MzLite.Wiff
 
-    open Newtonsoft.Json
-    open Newtonsoft.Json.Serialization
-
     /// Returns a MzLite.Binary.Peak1DArray
     let getPeak1DArray (reader:IMzLiteDataReader) msID = 
         reader.ReadSpectrumPeaks(msID)
@@ -43,3 +40,19 @@ module AccessPeakArray =
          |> Seq.map (fun peak -> peak.Mz, peak.Intensity) //TODO  mutable Ansatz
          |> Array.ofSeq
          |> Array.unzip
+    
+    /// Creates Peak1DArray of mzData array and intensityData Array
+    let createPeak1DArray compression mzBinaryDataType intensityBinaryDataType (mzData:float []) (intensityData:float []) =
+        match compression with
+        | true -> 
+            let peak1DArray = new Peak1DArray(BinaryDataCompressionType.ZLib,intensityBinaryDataType, mzBinaryDataType)
+            let zipedData = Array.map2 (fun mz intz -> MzLite.Binary.Peak1D(intz,mz)) mzData intensityData 
+            let newPeakA = MzLite.Commons.Arrays.MzLiteArray.ToMzLiteArray zipedData
+            peak1DArray.Peaks <- newPeakA
+            peak1DArray
+        | false -> 
+            let peak1DArray = new Peak1DArray(BinaryDataCompressionType.NoCompression,intensityBinaryDataType, mzBinaryDataType)
+            let zipedData = Array.map2 (fun mz intz -> MzLite.Binary.Peak1D(intz,mz)) mzData intensityData 
+            let newPeakA = MzLite.Commons.Arrays.MzLiteArray.ToMzLiteArray zipedData
+            peak1DArray.Peaks <- newPeakA
+            peak1DArray

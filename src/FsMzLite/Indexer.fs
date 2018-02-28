@@ -1,7 +1,5 @@
 namespace FsMzLite
 
-open Newtonsoft.Json;
-open Newtonsoft.Json.Serialization;
 open System
 
 module Indexer =
@@ -57,7 +55,6 @@ module Indexer =
     let splitByAdjacentRanges f1 (data: IndexedItemCollection<'a,'b>)  (range: ('a*'a) []) =
         let startIdx = Array.findIndex (fun x -> x.Key >= fst range.[0]) data
         let rec splitDataByRangeInnerF f1 rangeCount (dataCount:int) (acc: 'b list list) (data: IndexedItemCollection<'a,'b>) (range: ('a*'a) []) =
-            printfn "%i" rangeCount
             if   rangeCount = range.Length then
                  acc
             else
@@ -68,7 +65,6 @@ module Indexer =
     ///
     let splitAdjacentByUpperBorder f1 (data: IndexedItemCollection<'a,'b>)  (upperVal:('a) []) =
         let rec splitDataByRangeInnerF f1 upperValCount (dataCount:int) (acc: 'b list list) (data: IndexedItemCollection<'a,'b>) (upperVal:('a) []) =
-            printfn "%i" upperValCount
             if   upperValCount = upperVal.Length then
                  acc
             else

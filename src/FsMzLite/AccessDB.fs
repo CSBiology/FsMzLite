@@ -4,23 +4,12 @@ namespace FsMzLite
 module AccessDB = 
 
     open System
-    open System.Collections.Generic;
-    open System.Globalization;
     open System.IO
 
-    open MzLite
     open MzLite.Binary
-    open MzLite.Commons
     open MzLite.IO
-    open MzLite.Json
-    open MzLite.MetaData
     open MzLite.Model
-    open MzLite.Processing
     open MzLite.SQL
-    open MzLite.Wiff
-
-    open Newtonsoft.Json
-    open Newtonsoft.Json.Serialization
 
     /// Create a new file instance of the DB schema. DELETES already existing instance
     let initDB filePath =
@@ -35,25 +24,65 @@ module AccessDB =
                    db 
         | false -> initDB filePath
 
-    /// Inserts MassSpectrum into DB schema
+    /// copies MassSpectrum into DB schema
     let insertMSSpectrum (db: MzLiteSQL) runID (reader:IMzLiteDataReader) (compress: bool) (spectrum: MassSpectrum) = 
         let peakArray = reader.ReadSpectrumPeaks(spectrum.ID)
         match compress with 
         | true  -> 
-            let clonedP = new Peak1DArray(BinaryDataCompressionType.ZLib,peakArray.MzDataType,peakArray.IntensityDataType)
+            let clonedP = new Peak1DArray(BinaryDataCompressionType.ZLib,peakArray.IntensityDataType,peakArray.MzDataType)
             clonedP.Peaks <- peakArray.Peaks
             db.Insert(runID, spectrum, clonedP)
-        | false ->  
-            db.Insert(runID, spectrum, peakArray)
+        | false -> 
+            let clonedP = new Peak1DArray(BinaryDataCompressionType.NoCompression,peakArray.IntensityDataType,peakArray.MzDataType)
+            clonedP.Peaks <- peakArray.Peaks
+            db.Insert(runID, spectrum, clonedP)
+
+    /// modifies spectrum according to the used spectrumPeaksModifierF and inserts the result into the DB schema 
+    let insertModifiedSpectrumBy (spectrumPeaksModifierF: IMzLiteDataReader -> MassSpectrum -> bool -> Peak1DArray ) (db: MzLiteSQL) runID (reader:IMzLiteDataReader) (compress: bool) (spectrum: MassSpectrum) = 
+        let modifiedP = 
+            spectrumPeaksModifierF reader spectrum compress
+        db.Insert(runID, spectrum, modifiedP)
 
     /// Starts bulkinsert of mass spectra into a MzLiteSQL database
-    let insertMSSpectraBy filepath runID (reader:IMzLiteDataReader) (compress: bool) (spectra: seq<MassSpectrum>) = 
-        let db = getConnection filepath
+    let insertMSSpectraBy insertSpectrumF outFilepath runID (reader:IMzLiteDataReader) (compress: bool) (spectra: seq<MassSpectrum>) = 
+        let db = getConnection outFilepath
         let bulkInsert spectra = 
             spectra
-            |> Seq.iter (insertMSSpectrum db runID reader compress)                                 
+            |> Seq.iter (insertSpectrumF db runID reader compress)                                 
         let trans = db.BeginTransaction()
         bulkInsert spectra
         trans.Commit()
         trans.Dispose() 
         db.Dispose()
+
+    ///// copies MassSpectrum into DB schema
+    //let insertMSSpectrumAsync (db: MzLiteSQL) runID (reader:IMzLiteDataReader) (compress: bool) (spectrum: MassSpectrum) = 
+    //    let peakArray = reader.ReadSpectrumPeaks(spectrum.ID)
+    //    match compress with 
+    //    | true  -> 
+    //        let clonedP = new Peak1DArray(BinaryDataCompressionType.ZLib,peakArray.IntensityDataType,peakArray.MzDataType)
+    //        clonedP.Peaks <- peakArray.Peaks
+    //        db.InsertAsync(runID, spectrum, clonedP)
+    //    | false -> 
+    //        let clonedP = new Peak1DArray(BinaryDataCompressionType.NoCompression,peakArray.IntensityDataType,peakArray.MzDataType)
+    //        clonedP.Peaks <- peakArray.Peaks
+    //        db.InsertAsync(runID, spectrum, clonedP)
+    
+    ///// modifies spectrum according to the used spectrumPeaksModifierF and inserts the result into the DB schema 
+    //let insertModifiedSpectrumAsyncBy (spectrumPeaksModifierF: IMzLiteDataReader -> MassSpectrum -> bool -> Peak1DArray ) (db: MzLiteSQL) runID (reader:IMzLiteDataReader) (compress: bool) (spectrum: MassSpectrum) = 
+    //    let modifiedP = 
+    //        spectrumPeaksModifierF reader spectrum compress
+    //    db.InsertAsync(runID, spectrum, modifiedP).RunSynchronously
+                
+    ///// Starts bulkinsert of mass spectra into a MzLiteSQL database
+    //let insertMSSpectraAsyncBy insertSpectrumFAsync outFilepath runID (reader:IMzLiteDataReader) (compress: bool) (spectra: seq<MassSpectrum>) = 
+    //    let db = getConnection outFilepath
+    //    let bulkInsert spectra = 
+    //        [for i in spectra -> async { return (insertSpectrumFAsync db runID reader compress i)}]
+    //        |> Async.Parallel
+    //        |> Async.RunSynchronously
+    //    let trans = db.BeginTransaction()
+    //    bulkInsert spectra
+    //    trans.Commit()
+    //    trans.Dispose() 
+    //    db.Dispose()

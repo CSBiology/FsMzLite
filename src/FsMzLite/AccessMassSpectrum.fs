@@ -3,23 +3,8 @@ namespace FsMzLite
 module AccessMassSpectrum = 
 
     open System
-    open System.Collections.Generic;
-    open System.Globalization;
-    open System.IO
-
-    open MzLite
-    open MzLite.Binary
-    open MzLite.Commons
     open MzLite.IO
-    open MzLite.Json
-    open MzLite.MetaData
     open MzLite.Model
-    open MzLite.Processing
-    open MzLite.SQL
-    open MzLite.Wiff
-
-    open Newtonsoft.Json
-    open Newtonsoft.Json.Serialization
 
     open Indexer    
     
@@ -27,7 +12,11 @@ module AccessMassSpectrum =
     /// accesses the Header of the WiffFile referenced by the path
     let getMassSpectraBy (reader:IMzLiteDataReader) runID = 
         reader.ReadMassSpectra(runID)
-    
+
+    ///// accesses the Header of the WiffFile referenced by the path
+    //let getMassSpectrAsyncBy (reader:IMzLiteDataReader) runID = 
+    //    reader.ReadMassSpectra(runID)
+        
     /// Returns the ID of the MassSpectrum
     let getID (massSpectrum: MassSpectrum) =
         massSpectrum.ID  
